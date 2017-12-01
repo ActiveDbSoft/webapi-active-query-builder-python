@@ -11,19 +11,47 @@ Please follow the [installation procedure](#installation--usage) and then run th
 
 ```python
 import time
-import webapi_active_query_builder
-from webapi_active_query_builder.rest import ApiException
+import webapi_active_query_builder as webapi
 from pprint import pprint
 # create an instance of the API class
-api_instance = webapi_active_query_builder.ActiveQueryBuilderApi
-query = webapi_active_query_builder.SqlQuery() # SqlQuery | Information about SQL query and it's context.
+api = webapi.ActiveQueryBuilderApi()
+sql = "Select customer_id, first_name From customer"
+metadataGuid = "b3207f4f-b1f4-4dc2-979b-7724ed2d0221"
 
-try:
-    api_response = api_instance.get_query_columns_post(query)
-    pprint(api_response)
-except ApiException as e:
-    print "Exception when calling ActiveQueryBuilderApi->get_query_columns_post: %s\n" % e
+query = webapi.SqlQuery() # SqlQuery | Information about SQL query and it's context.
+query.guid = metadataGuid
+query.text = sql
 
+columns = api.get_query_columns_post(query)
+print('API called successfully. Returned columns: ', columns)
+
+transform = webapi.Transform()
+transform.guid = metadataGuid
+transform.sql = sql
+
+filter = webapi.ConditionGroup()
+
+condition = webapi.Condition()
+condition.field = "customer_id"
+condition.condition_operator = "Greater"
+condition.values = [10]
+
+filter.conditions = [condition]
+
+page = webapi.Pagination()
+page.skip = 2
+page.take = 3
+
+order = webapi.Sorting()
+order.field = "customer_id"
+order.order = "asc"
+
+transform.filter = filter
+transform.pagination = page
+transform.sortings = [order]
+
+result = api.transform_sql_post(transform)
+print('API called successfully. Returned result: ', result)
 ```
 
 ## Documentation for API Endpoints
